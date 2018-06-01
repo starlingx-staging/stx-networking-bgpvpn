@@ -17,6 +17,9 @@ ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
 BRANCH_NAME=stable/pike
 GIT_BASE=${GIT_BASE:-https://git.openstack.org/}
 
+CGCS_DIR=$1
+shift
+
 install_project() {
     local project=$1
     local branch=${2:-$BRANCH_NAME}
@@ -58,6 +61,9 @@ set -e
 
 install_cmd="pip install -c$1"
 shift
+
+# Install from local repos before contraints file is processed.
+pip install -U -e ${CGCS_DIR}/git/neutron-lib
 
 install_project neutron
 install_project horizon

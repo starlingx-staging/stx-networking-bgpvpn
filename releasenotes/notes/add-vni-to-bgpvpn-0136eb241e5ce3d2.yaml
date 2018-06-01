@@ -1,0 +1,8 @@
+---
+prelude: >
+    Add VNI attribute to BGPVPN table
+features:
+  - Add VNI attribute to BGPVPN table when VXLAN
+    encapsulation is used.
+  - VNI attribute is optional attribute, its range
+    is [1, 2^24-1]

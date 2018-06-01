@@ -100,11 +100,13 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self.bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
                                        'type': 'l3',
                                        'route_targets': ['1234:56'],
-                                       'tenant_id': self._tenant_id}}
+                                       'tenant_id': self._tenant_id,
+                                       'vni': 1000}}
         self.converted_data = copy.copy(self.bgpvpn_data)
         self.converted_data['bgpvpn'].update({'export_targets': [],
                                               'import_targets': [],
-                                              'route_distinguishers': []})
+                                              'route_distinguishers': [],
+                                              'vni': 1000})
 
     @contextlib.contextmanager
     def bgpvpn(self, do_delete=True, **kwargs):

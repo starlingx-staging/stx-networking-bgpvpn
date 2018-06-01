@@ -12,6 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+#
+# Copyright (c) 2017 Wind River Systems, Inc.
+#
 
 import abc
 import six
@@ -55,7 +58,7 @@ class BGPVPNDriverBase(object):
         pass
 
     @abc.abstractmethod
-    def create_net_assoc(self, bgpvpn_id, network_association):
+    def create_net_assoc(self, context, bgpvpn_id, network_association):
         pass
 
     @abc.abstractmethod
@@ -84,6 +87,46 @@ class BGPVPNDriverBase(object):
 
     @abc.abstractmethod
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_gateways(self, context, bgpvpn_id, filters=None,
+                            fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_active_gateways(self, context, bgpvpn_id, filters=None,
+                                   fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_devices(self, context, bgpvpn_id, filters=None,
+                           fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_active_devices(self, context, bgpvpn_id, filters=None,
+                                  fields=None):
+        pass
+
+    @abc.abstractmethod
+    def update_bgpvpn_gateways(self, context, agent_id, gateways):
+        pass
+
+    @abc.abstractmethod
+    def update_bgpvpn_devices(self, context, agent_id, devices):
+        pass
+
+    @abc.abstractmethod
+    def host_updated(self, context, host):
+        pass
+
+    @abc.abstractmethod
+    def agent_updated(self, context, agent):
+        pass
+
+    @abc.abstractmethod
+    def delete_bgpvpn_speaker_assoc(self, context, bgpvpn_id):
         pass
 
 
@@ -177,6 +220,26 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                                               bgpvpn_id)
             self.delete_router_assoc_precommit(context, router_assoc)
         self.delete_router_assoc_postcommit(context, router_assoc)
+
+    def get_bgpvpn_gateways(self, context, bgpvpn_id,
+                            filters=None, fields=None):
+        return self.bgpvpn_db.get_bgpvpn_gateways(
+            context, bgpvpn_id, filters=filters, fields=fields)
+
+    def get_bgpvpn_active_gateways(self, context, bgpvpn_id,
+                                   filters=None, fields=None):
+        return self.bgpvpn_db.get_bgpvpn_active_gateways(
+            context, bgpvpn_id, filters=filters, fields=fields)
+
+    def get_bgpvpn_devices(self, context, bgpvpn_id,
+                           filters=None, fields=None):
+        return self.bgpvpn_db.get_bgpvpn_devices(
+            context, bgpvpn_id, filters=filters, fields=fields)
+
+    def get_bgpvpn_active_devices(self, context, bgpvpn_id,
+                                  filters=None, fields=None):
+        return self.bgpvpn_db.get_bgpvpn_active_devices(
+            context, bgpvpn_id, filters=filters, fields=fields)
 
     @abc.abstractmethod
     def create_bgpvpn_postcommit(self, context, bgpvpn):
@@ -281,4 +344,19 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
         pass
 
     def delete_router_assoc_postcommit(self, context, router_assoc):
+        pass
+
+    def update_bgpvpn_gateways(self, context, agent_id, gateways):
+        pass
+
+    def update_bgpvpn_devices(self, context, agent_id, devices):
+        pass
+
+    def host_updated(self, context, host):
+        pass
+
+    def agent_updated(self, context, agent):
+        pass
+
+    def delete_bgpvpn_speaker_assoc(self, context, bgpvpn_id):
         pass

@@ -21,17 +21,21 @@ from heat.engine.resources.openstack.neutron import neutron
 from networking_bgpvpn_heat._i18n import _
 
 
+MIN_VXLAN_VNI = 1
+MAX_VXLAN_VNI = 2 ** 24 - 1
+
+
 class BGPVPN(neutron.NeutronResource):
     """A resource for BGPVPN service in neutron.
 
     """
 
     PROPERTIES = (
-        NAME, TYPE, DESCRIPTION, ROUTE_DISTINGUISHERS,
+        NAME, TYPE, VNI, DESCRIPTION, ROUTE_DISTINGUISHERS,
         IMPORT_TARGETS, EXPORT_TARGETS, ROUTE_TARGETS,
         TENANT_ID
     ) = (
-        'name', 'type', 'description',
+        'name', 'type', 'vni', 'description',
         'route_distinguishers', 'import_targets',
         'export_targets', 'route_targets',
         'tenant_id'
@@ -58,6 +62,16 @@ class BGPVPN(neutron.NeutronResource):
                 constraints.AllowedValues(['l2', 'l3'])
             ]
         ),
+
+        VNI: properties.Schema(
+            properties.Schema.INTEGER,
+            _('VxLAN VNI Value.'),
+            required=True,
+            constraints=[
+                constraints.Range(min=MIN_VXLAN_VNI, max=MAX_VXLAN_VNI)
+            ]
+        ),
+
         DESCRIPTION: properties.Schema(
             properties.Schema.STRING,
             _('Description for the bgpvpn.'),

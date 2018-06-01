@@ -65,12 +65,14 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             'bgpvpn': {'name': 'bgpvpn1',
                        'type': 'l3',
                        'route_targets': ['1234:56'],
+                       'vni': '1000',
                        'tenant_id': _uuid()}
         }
         expected_ret_val = copy.copy(data['bgpvpn'])
         expected_ret_val['import_targets'] = []
         expected_ret_val['export_targets'] = []
         expected_ret_val['route_distinguishers'] = []
+        expected_ret_val['vni'] = 1000
         expected_call_args = copy.copy(expected_ret_val)
         expected_ret_val.update({'id': bgpvpn_id})
 
@@ -116,6 +118,7 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             yield {'bgpvpn': {'name': 'bgpvpn1',
                               'type': 'l3',
                               field: value,
+                              'vni': None,
                               'tenant_id': _uuid()}
                    }
 
@@ -134,6 +137,7 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             yield {'bgpvpn': {'name': 'bgpvpn1',
                               'type': 'l3',
                               field: value,
+                              'vni': None,
                               'tenant_id': _uuid()}
                    }
 

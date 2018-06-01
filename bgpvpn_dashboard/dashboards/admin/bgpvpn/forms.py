@@ -29,6 +29,9 @@ from bgpvpn_dashboard.dashboards.project.bgpvpn import forms \
 RTRD_REGEX = constants.RTRD_REGEX[4:-1]
 RTRDS_REGEX = '^%s( *, *%s)*$' % (RTRD_REGEX, RTRD_REGEX)
 
+MIN_VXLAN_VNI = 1
+MAX_VXLAN_VNI = 2 ** 24 - 1
+
 
 class CommonData(project_forms.CommonData):
     route_targets = forms.CharField(
@@ -70,7 +73,10 @@ class CreateBgpVpn(CommonData):
                              help_text=_("The type of VPN "
                                          " and the technology behind it."))
 
-    fields_order = ['name', 'tenant_id', 'type',
+    vni = forms.IntegerField(label=_("VNI"),
+                             min_value=MIN_VXLAN_VNI, max_value=MAX_VXLAN_VNI)
+
+    fields_order = ['name', 'tenant_id', 'type', 'vni',
                     'route_targets', 'import_targets', 'export_targets']
 
     def __init__(self, request, *args, **kwargs):
@@ -89,9 +95,11 @@ class EditDataBgpVpn(CommonData):
         attrs={'readonly': 'readonly'}))
     type = forms.CharField(label=_("Type"), widget=forms.TextInput(
         attrs={'readonly': 'readonly'}))
+    vni = forms.CharField(label=_("VNI"), widget=forms.TextInput(
+        attrs={'readonly': 'readonly'}))
     tenant_id = forms.CharField(widget=forms.HiddenInput())
 
-    fields_order = ['name', 'bgpvpn_id', 'tenant_id', 'type',
+    fields_order = ['name', 'bgpvpn_id', 'tenant_id', 'type', 'vni',
                     'route_targets', 'import_targets', 'export_targets']
 
     def __init__(self, request, *args, **kwargs):

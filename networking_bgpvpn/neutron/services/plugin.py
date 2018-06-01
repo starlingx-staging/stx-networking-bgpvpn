@@ -12,12 +12,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+#
+# Copyright (c) 2017 Wind River Systems, Inc.
+#
 
+from neutron.callbacks import resources as n_resources
 from neutron.db import servicetype_db as st_db
+from neutron.plugins.common import constants as p_const
 from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
+from neutron_lib.api.definitions import provider_net as provider
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
 from neutron_lib.callbacks import resources
@@ -25,6 +31,8 @@ from neutron_lib import constants as const
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
+
+from neutron_dynamic_routing.api.rpc.callbacks import resources as dr_resources
 
 from oslo_log import log
 
@@ -64,6 +72,31 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
         registry.subscribe(self._notify_adding_interface_to_router,
                            resources.ROUTER_INTERFACE,
                            events.BEFORE_CREATE)
+        registry.subscribe(self._notify_host_updated,
+                           n_resources.HOST, events.AFTER_UPDATE)
+        registry.subscribe(self._notify_agent_updated,
+                           resources.AGENT, events.AFTER_UPDATE)
+        registry.subscribe(self._notify_removing_vpn_from_speaker,
+                           dr_resources.BGP_SPEAKER_VPN_ASSOC,
+                           events.AFTER_DELETE)
+
+    def get_workers(self):
+        if hasattr(self.driver, 'get_workers'):
+            return self.driver.get_workers()
+        return []
+
+    def _notify_host_updated(self, resource, event, trigger, **kwargs):
+        context = kwargs.get('context')
+        self.driver.host_updated(context, kwargs['host'])
+
+    def _notify_agent_updated(self, resource, event, trigger, **kwargs):
+        context = kwargs.get('context')
+        self.driver.agent_updated(context, kwargs['agent'])
+
+    def _notify_removing_vpn_from_speaker(self, resource, event, trigger,
+                                          **kwargs):
+        context = kwargs.get('context')
+        self.driver.delete_bgpvpn_speaker_assoc(context, kwargs['bgpvpn_id'])
 
     def _notify_adding_interface_to_router(self, resource, event, trigger,
                                            **kwargs):
@@ -166,6 +199,19 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
     def delete_bgpvpn(self, context, id):
         self.driver.delete_bgpvpn(context, id)
 
+    def _validate_network_type_and_vni(self, network, bgpvpn):
+        if provider.NETWORK_TYPE not in network:
+            # NOTE(alegacy): the unit tests for this module do not inherit
+            # from the ml2 plugin therefore the network is not augmented
+            # with the provider network information
+            return
+        if network[provider.NETWORK_TYPE] != p_const.TYPE_VXLAN:
+            msg = 'l2 bgpvpn can only be associated to a vxlan network'
+            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
+        if network[provider.SEGMENTATION_ID] != bgpvpn['vni']:
+            msg = 'vni value of bgpvpn and network must match'
+            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
+
     def create_bgpvpn_network_association(self, context, bgpvpn_id,
                                           network_association):
         net_assoc = network_association['network_association']
@@ -180,6 +226,8 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
             msg = 'network association and bgpvpn should belong to\
                 the same tenant'
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+        if bgpvpn['type'] == constants.BGPVPN_L2:
+            self._validate_network_type_and_vni(net, bgpvpn)
         return self.driver.create_net_assoc(context, bgpvpn_id, net_assoc)
 
     def get_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id,
@@ -229,3 +277,23 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
 
     def delete_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id):
         self.driver.delete_router_assoc(context, assoc_id, bgpvpn_id)
+
+    def get_bgpvpn_learned_gateways(self, context, bgpvpn_id, filters=None,
+                                    fields=None):
+        return self.driver.get_bgpvpn_gateways(
+            context, bgpvpn_id, filters=filters, fields=fields)
+
+    def get_bgpvpn_active_gateways(self, context, bgpvpn_id, filters=None,
+                                   fields=None):
+        return self.driver.get_bgpvpn_active_gateways(
+            context, bgpvpn_id, filters=filters, fields=fields)
+
+    def get_bgpvpn_learned_devices(self, context, bgpvpn_id, filters=None,
+                                   fields=None):
+        return self.driver.get_bgpvpn_devices(
+            context, bgpvpn_id, filters=filters, fields=fields)
+
+    def get_bgpvpn_active_devices(self, context, bgpvpn_id, filters=None,
+                                  fields=None):
+        return self.driver.get_bgpvpn_active_devices(
+            context, bgpvpn_id, filters=filters, fields=fields)

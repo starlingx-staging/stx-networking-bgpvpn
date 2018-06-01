@@ -102,6 +102,9 @@ class BgpvpnTable(tables.DataTable):
                          verbose_name=_("Name"),
                          link=("horizon:admin:bgpvpn:detail"))
     type = tables.Column("type", verbose_name=_("Type"))
+
+    vni = tables.Column("vni", verbose_name=_("VNI"))
+
     route_targets = tables.Column(get_route_targets,
                                   verbose_name=_("Route Targets"))
     import_targets = tables.Column(get_import_targets,

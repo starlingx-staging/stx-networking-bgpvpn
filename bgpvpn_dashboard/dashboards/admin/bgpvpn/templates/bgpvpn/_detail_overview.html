@@ -8,6 +8,8 @@
     <dd>{{ bgpvpn.id }}</dd>
     <dt>{% trans "Type" %}</dt>
     <dd>{{ bgpvpn.type }}</dd>
+    <dt>{% trans "VNI" %}</dt>
+    <dd>{{ bgpvpn.vni }}</dd>
     <dt>{% trans "Route Targets" %}</dt>
       <dd>
           {% for rt in bgpvpn.route_targets %}

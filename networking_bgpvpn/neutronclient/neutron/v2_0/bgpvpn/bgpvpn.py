@@ -12,6 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+#
+# Copyright (c) 2017 Wind River Systems, Inc.
+#
 
 from __future__ import print_function
 
@@ -61,6 +64,10 @@ class BGPVPNCreateUpdateCommon(BGPVPN):
             help=_('List of RDs that will be used to advertize VPN routes.'
                    'Usage: -- --route-distinguishers list=true '
                    '<asn1>:<nn1> <asn2>:<nn2> ...'))
+        parser.add_argument(
+            '--vni',
+            help=_('VXLAN Network Identifier to be used for this BGPVPN '
+                   'when a VXLAN encapsulation is used'))
 
     def args2body(self, parsed_args):
         body = {
@@ -70,7 +77,7 @@ class BGPVPNCreateUpdateCommon(BGPVPN):
         neutronv20.update_dict(parsed_args, body[self.resource],
                                ['name', 'tenant_id', 'type', 'route_targets',
                                 'import_targets', 'export_targets',
-                                'route_distinguishers'])
+                                'route_distinguishers', 'vni'])
 
         return body
 
@@ -284,3 +291,117 @@ class BGPVPNRouterAssocShow(extension.ClientExtensionShow,
                             BGPVPNRouterAssoc):
     """Show a given BGPVPN-Router association."""
     shell_command = "bgpvpn-router-assoc-show"
+
+
+class BGPVPNLearnedGateway(BGPVPNAssociation,
+                           extension.NeutronClientExtension):
+
+    resource = 'learned_gateway'
+    resource_plural = '%ss' % resource
+
+    # (parent_resource set to True so that the
+    # first %s in *_path will be replaced with parent_id)
+    parent_resource = True
+
+    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
+    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+
+    versions = ['2.0']
+
+    allow_names = False  # network associations have no name
+
+
+class BGPVPNLearnedGatewayList(extension.ClientExtensionList,
+                               BGPVPNLearnedGateway):
+    """List BGPVPN Learned Gateways for a given BGPVPN."""
+    shell_command = "bgpvpn-learned-gateway-list"
+
+    list_columns = ['id', 'agent_id', 'ip_address', 'updated_at']
+    pagination_support = True
+    sorting_support = True
+
+
+class BGPVPNActiveGateway(BGPVPNAssociation,
+                          extension.NeutronClientExtension):
+
+    resource = 'active_gateway'
+    resource_plural = '%ss' % resource
+
+    # (parent_resource set to True so that the
+    # first %s in *_path will be replaced with parent_id)
+    parent_resource = True
+
+    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
+    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+
+    versions = ['2.0']
+
+    allow_names = False  # network associations have no name
+
+
+class BGPVPNActiveGatewayList(extension.ClientExtensionList,
+                              BGPVPNActiveGateway):
+    """List BGPVPN Active Gateways for a given BGPVPN."""
+    shell_command = "bgpvpn-active-gateway-list"
+
+    list_columns = ['id', 'agent_id', 'ip_address', 'updated_at']
+    pagination_support = True
+    sorting_support = True
+
+
+class BGPVPNLearnedDevice(BGPVPNAssociation,
+                          extension.NeutronClientExtension):
+
+    resource = 'learned_device'
+    resource_plural = '%ss' % resource
+
+    # (parent_resource set to True so that the
+    # first %s in *_path will be replaced with parent_id)
+    parent_resource = True
+
+    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
+    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+
+    versions = ['2.0']
+
+    allow_names = False  # network associations have no name
+
+
+class BGPVPNLearnedDeviceList(extension.ClientExtensionList,
+                              BGPVPNLearnedDevice):
+    """List BGPVPN Learned devices for a given BGPVPN."""
+    shell_command = "bgpvpn-learned-device-list"
+
+    list_columns = ['id', 'agent_id', 'mac_address', 'ip_address',
+                    'gateway_ip', 'updated_at']
+    pagination_support = True
+    sorting_support = True
+
+
+class BGPVPNActiveDevice(BGPVPNAssociation,
+                         extension.NeutronClientExtension):
+
+    resource = 'active_device'
+    resource_plural = '%ss' % resource
+
+    # (parent_resource set to True so that the
+    # first %s in *_path will be replaced with parent_id)
+    parent_resource = True
+
+    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
+    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+
+    versions = ['2.0']
+
+    allow_names = False  # network associations have no name
+
+
+class BGPVPNActiveDeviceList(extension.ClientExtensionList,
+                             BGPVPNActiveDevice):
+    """List BGPVPN Active devices for a given BGPVPN."""
+    shell_command = "bgpvpn-active-device-list"
+
+    list_columns = ['id', 'agent_id', 'mac_address', 'ip_address',
+                    'gateway_ip', 'updated_at']
+    pagination_support = True
+    sorting_support = True

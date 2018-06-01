@@ -12,6 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+#
+# Copyright (c) 2017 Wind River Systems, Inc.
+#
 
 import abc
 
@@ -62,6 +65,16 @@ class BGPVPNRDNotSupported(n_exc.BadRequest):
                 "route distinguisher")
 
 
+class BGPVPNVNINotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support to manually set "
+                "vni")
+
+
+class BGPVPNVNIAlreadyInUse(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support duplicate VNI "
+                "values")
+
+
 class BGPVPNFindFromNetNotSupported(n_exc.BadRequest):
     message = _("BGPVPN %(driver)s driver does not support to fetch BGPVPNs "
                 "associated to network id %(net_id)")
@@ -70,6 +83,16 @@ class BGPVPNFindFromNetNotSupported(n_exc.BadRequest):
 class BGPVPNNetAssocAlreadyExists(n_exc.BadRequest):
     message = _("network %(net_id)s is already associated to "
                 "BGPVPN %(bgpvpn_id)s")
+
+
+class BGPVPNNetAssocNotSupportedForType(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support %(type)s VPN "
+                "associations to networks")
+
+
+class BGPVPNRouterAssocNotSupportedForType(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support %(type)s VPN "
+                "associations to routers")
 
 
 class BGPVPNRouterAssociationNotSupported(n_exc.BadRequest):
@@ -238,4 +261,24 @@ class BGPVPNPluginBase(libbase.ServicePluginBase):
 
     @abc.abstractmethod
     def delete_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_learned_gateways(self, context, bgpvpn_id, filters=None,
+                                    fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_active_gateways(self, context, bgpvpn_id, filters=None,
+                                   fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_learned_devices(self, context, bgpvpn_id, filters=None,
+                                   fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_active_devices(self, context, bgpvpn_id, filters=None,
+                                  fields=None):
         pass
